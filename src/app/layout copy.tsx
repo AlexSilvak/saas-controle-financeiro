@@ -7,19 +7,7 @@ import "@radix-ui/themes/styles.css";
 import {  Plus,List,Search,ChartColumnBig  } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/sonner"
-import { AppSidebar } from "@/components/app-sidebar"
-import { ChartAreaInteractive } from "@/components/chart-area-interactive"
-import { DataTable } from "@/components/data-table"
-import { SectionCards } from "@/components/section-cards"
-import { SiteHeader } from "@/components/site-header"
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar"
 
-import data from "@/lib/data.json"
-import DashboardMain from "@/components/DashboardMain";
 
 
 const geistSans = Geist({
@@ -44,9 +32,15 @@ export default function RootLayout({
 }>) {
 
   const navigation = [
-   
-    { name: 'Dashboard', href: '/search', icon: <Search />, component: <DashboardMain /> },
+  
+    { name: 'Despesas', href: '/invoices', current: false ,icon:<List/>},
+    { name: 'Lançamentos', href: '/new', current: false, icon:<Plus/>}, 
+    { name: 'Pesquisar', href: '/search', current: false ,icon:<Search />},
+    { name: 'Dashboard', href: '/dashboard', current: false ,icon:<ChartColumnBig   />}
   ]
+
+ 
+
 
 
   return (
@@ -58,32 +52,25 @@ export default function RootLayout({
   
         
         <main>
-        <Toaster />
         <ThemeProvider
             attribute="class"
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange
           > 
+      <nav className='scroll-m-1 justify-center border  p-1 '>
+             <div className='flex grid-cols-1 gap-2 font-bold text-1xl mr-100 ml-150  mt-4 ' ><div className='flex grid-cols-1 ml-0 mr-50 mt-2'></div>
+        {
+        navigation.map((item)=>{
+         return <a key={item.name} href={item.href} className='flex grid-cols-1 gap-1 text-sm font-medium'><div className={item.current ? 'text-gray-500  border-white delay-500' : ' text-gray-400 hover:text-sky-500 hover:border-y-sky-500  hover:border-b-2 delay-500'}><Button variant='ghost'  >{item.icon}{item.name}</Button></div> </a>
+        })
+      }
+      
+    </div>
      
-        <SidebarProvider
-             style={
-               {
-                 "--sidebar-width": "calc(var(--spacing) * 72)",
-                 "--header-height": "calc(var(--spacing) * 12)",
-               } as React.CSSProperties
-             }
-           >
-             <AppSidebar />
-             <SidebarInset>
-               <SiteHeader />
-               
-               {children}
-             </SidebarInset>
-           </SidebarProvider>
-    
+    </nav>
           
-           
+            {children}
           </ThemeProvider>
         </main>
         
