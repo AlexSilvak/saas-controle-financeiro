@@ -1,5 +1,6 @@
 "use client"
-
+import { useEffect, useState } from "react";
+import axios from "axios";
 import * as React from "react"
 import {
   closestCenter,
@@ -106,30 +107,78 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 import Search from "@/components/Search"
+
 export const schema = z.object({
-  id: z.number(),
-  header: z.string(),
-  type: z.string(),
+  _id: z.coerce.string(),
+  descricao: z.string(),
+  forma_de_pagamento: z.string(),
+  valor:  z.number(),
+  tipo: z.string(),
+  categoria: z.string(),
+  data_vencimento:z.string(),
+  data_pagamento:z.coerce.number(),
   status: z.string(),
-  target: z.string(),
-  limit: z.string(),
-  reviewer: z.string(),
+  multa: z.coerce.string(),
+  juros: z.coerce.number (),
+  valor_total_pago: z.number(),
+  oberservacoes:z.coerce.string() ,
+  recorrente:z.coerce.string(),
+  usuario_id:z.string(),
+  data_criacao:z.string(),
 })
+
+
+
+// types/Lancamento.ts (ou dentro do próprio componente, se preferir)
+
+export interface Lancamento {
+  id: number; // ou _id: string se for do MongoDB
+  titulo: string;
+  forma_de_pagamento: string;
+  situacao: string;
+  parcelas: number;
+  total: number;
+  cliente: string;
+}
+
 
 // Create a separate component for the drag handle
 function DragHandle({ id }: { id: number }) {
-  const { attributes, listeners } = useSortable({
-    id,
-  })
+  const { attributes, listeners } = useSortable({ id })
+  const [data, setData] = useState<z.infer<typeof schema>[]>([])
+  const [loading, setLoading] = useState(true)
 
+  useEffect(() => {
+    axios
+      .get("/api/lancamentos")
+      .then((res) => {
+        // Validação com zod (opcional mas recomendado)
+        const parsed = z.array(schema).safeParse(res.data.lancamentos)
+        if (parsed.success) {
+          setData(parsed.data)
+        } else {
+          console.error("Erro ao validar dados", parsed.error)
+        }
+      })
+      .catch((err) => {
+        console.error("Erro ao carregar lançamentos:", err)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }, [])
+
+  
   return (
+ 
+   
     <Button
       {...attributes}
       {...listeners}
       variant="ghost"
       size="icon"
       className="text-muted-foreground size-7 hover:bg-transparent"
-    >
+    > 
       <IconGripVertical className="text-muted-foreground size-3" />
       <span className="sr-only">Drag to reorder</span>
     </Button>
@@ -140,7 +189,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
   {
     id: "drag",
     header: () => null,
-    cell: ({ row }) => <DragHandle id={row.original.id} />,
+    cell: ({ row }) => <DragHandle id={row.original._id} />,
   },
   {
     id: "select",
@@ -169,6 +218,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     enableHiding: false,
   },
   {
+
     accessorKey: "header",
     header: "Título",
     cell: ({ row }) => {
@@ -176,17 +226,17 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     },
     enableHiding: false,
   },
-  {
-    accessorKey: "type",
-    header: "Forma de Pagamento",
-    cell: ({ row }) => (
-      <div className="w-32">
-        <Badge variant="outline" className="text-muted-foreground px-1.5">
-          {row.original.type}
-        </Badge>
-      </div>
-    ),
-  },
+ {
+     accessorKey: "type",
+     header: "Forma de Pagamento",
+     cell: ({ row }) => (
+       <div className="w-32">
+         <Badge variant="outline" className="text-muted-foreground px-1.5">
+           {row.original.forma_de_pagamento}
+         </Badge>
+       </div>
+     ),
+   },  
   {
     accessorKey: "status",
     header: "Situação",
@@ -209,19 +259,19 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
         onSubmit={(e) => {
           e.preventDefault()
           toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-            loading: `Saving ${row.original.header}`,
+            loading: `Saving ${row.original.valor}`,
             success: "Pago",
             error: "Error",
           })
         }}
       >
-        <Label htmlFor={`${row.original.id}-target`} className="sr-only ">
+        <Label htmlFor={`${row.original.valor}-target`} className="sr-only ">
           Valor
         </Label>
         <Input
           className="hover:bg-input/30 focus-visible:bg-background dark:hover:bg-input/30 dark:focus-visible:bg-input/30 h-8 w-16 border-transparent bg-transparent ml-05 shadow-none focus-visible:border dark:bg-transparent"
-          defaultValue={row.original.target}
-          id={`${row.original.id}-target`}
+          defaultValue={row.original.valor}
+          id={`${row.original._id}-target`}
         />
       </form>
     ),
@@ -234,19 +284,19 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
         onSubmit={(e) => {
           e.preventDefault()
           toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-            loading: `Saving ${row.original.header}`,
+            loading: `Saving ${row.original.valor}`,
             success: "Done",
             error: "Error",
           })
         }}
       >
-        <Label htmlFor={`${row.original.id}-limit`} className="sr-only">
+        <Label htmlFor={`${row.original.valor}-limit`} className="sr-only">
           Limit
         </Label>
         <Input
           className="hover:bg-input/30 focus-visible:bg-background dark:hover:bg-input/30 dark:focus-visible:bg-input/30 h-8 w-16 border-transparent bg-transparent ml-05 shadow-none focus-visible:border dark:bg-transparent"
-          defaultValue={row.original.limit}
-          id={`${row.original.id}-limit`}
+          defaultValue={row.original.valor}
+          id={`${row.original._id}-limit`}
         />
       </form>
     ),
@@ -255,22 +305,22 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     accessorKey: "reviewer",
     header: "Cliente",
     cell: ({ row }) => {
-      const isAssigned = row.original.reviewer !== "Assign reviewer"
+      const isAssigned = row.original.descricao!== "Assign reviewer"
 
       if (isAssigned) {
-        return row.original.reviewer
+        return row.original.descricao
       }
 
       return (
         <>
-          <Label htmlFor={`${row.original.id}-reviewer`} className="sr-only">
+          <Label htmlFor={`${row.original._id}-reviewer`} className="sr-only">
             Cliente
           </Label>
           <Select>
             <SelectTrigger
               className="w-38 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate"
               size="sm"
-              id={`${row.original.id}-reviewer`}
+              id={`${row.original._id}-reviewer`}
             >
               <SelectValue placeholder="Assign reviewer" />
             </SelectTrigger>
@@ -313,7 +363,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
 
 function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({
-    id: row.original.id,
+    id: row.original._id,
   })
 
   return (
@@ -361,7 +411,7 @@ export function DataTable({
   )
 
   const dataIds = React.useMemo<UniqueIdentifier[]>(
-    () => data?.map(({ id }) => id) || [],
+    () => data?.map(({ _id }) => _id) || [],
     [data]
   )
 
@@ -375,7 +425,7 @@ export function DataTable({
       columnFilters,
       pagination,
     },
-    getRowId: (row) => row.id.toString(),
+    getRowId: (row) => row._id.toString(),
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
@@ -477,7 +527,7 @@ export function DataTable({
         value="outline"
         className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
       >
-        <div className="overflow-hidden rounded-lg border">
+        <div className="overflow-hidden rounded-lg border border-b-green-400">
           <DndContext
             collisionDetection={closestCenter}
             modifiers={[restrictToVerticalAxis]}
@@ -486,7 +536,7 @@ export function DataTable({
             id={sortableId}
           >
             <Table>
-              <TableHeader className="bg-muted sticky top-0 z-10">
+              <TableHeader className="bg-muted sticky top-0 z-10 ">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
                     {headerGroup.headers.map((header) => {
@@ -652,12 +702,12 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
     <Drawer direction={isMobile ? "bottom" : "right"}>
       <DrawerTrigger asChild>
         <Button variant="link" className="text-foreground w-fit px-0 text-left">
-          {item.header}
+          {item.descricao}
         </Button>
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="gap-1">
-          <DrawerTitle>{item.header}</DrawerTitle>
+          <DrawerTitle>{item.categoria}</DrawerTitle>
           <DrawerDescription>
             Showing total visitors for the last 6 months
           </DrawerDescription>
@@ -712,9 +762,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
                   <IconTrendingUp className="size-4" />
                 </div>
                 <div className="text-muted-foreground">
-                  Showing total visitors for the last 6 months. This is just
-                  some random text to test the layout. It spans multiple lines
-                  and should wrap around.
+                  
                 </div>
               </div>
               <Separator />
@@ -722,33 +770,29 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           )}
           <form className="flex flex-col gap-4">
             <div className="flex flex-col gap-3">
-              <Label htmlFor="header">Header</Label>
-              <Input id="header" defaultValue={item.header} />
+              <Label htmlFor="header">Descrição</Label>
+              <Input id="header" defaultValue={item.descricao} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-3">
-                <Label htmlFor="type">Type</Label>
-                <Select defaultValue={item.type}>
+                <Label htmlFor="type">Forma Pagamento</Label>
+                <Select defaultValue={item.tipo}>
                   <SelectTrigger id="type" className="w-full">
                     <SelectValue placeholder="Select a type" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Table of Contents">
-                      Table of Contents
+                      Pix
                     </SelectItem>
                     <SelectItem value="Executive Summary">
-                      Executive Summary
+                      Cartão
                     </SelectItem>
                     <SelectItem value="Technical Approach">
-                      Technical Approach
+                      Boleto
                     </SelectItem>
-                    <SelectItem value="Design">Design</SelectItem>
-                    <SelectItem value="Capabilities">Capabilities</SelectItem>
                     <SelectItem value="Focus Documents">
-                      Focus Documents
+                      Transferência
                     </SelectItem>
-                    <SelectItem value="Narrative">Narrative</SelectItem>
-                    <SelectItem value="Cover Page">Cover Page</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -768,35 +812,35 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-3">
-                <Label htmlFor="target">Target</Label>
-                <Input id="target" defaultValue={item.target} />
+                <Label htmlFor="target">Tipo</Label>
+                <Input id="target" defaultValue={item.tipo} />
               </div>
               <div className="flex flex-col gap-3">
-                <Label htmlFor="limit">Limit</Label>
-                <Input id="limit" defaultValue={item.limit} />
+                <Label htmlFor="limit">Categoria</Label>
+                <Input id="limit" defaultValue={item.categoria} />
               </div>
             </div>
             <div className="flex flex-col gap-3">
               <Label htmlFor="reviewer">Cliente</Label>
-              <Select defaultValue={item.reviewer}>
+              <Select defaultValue={item.descricao}>
                 <SelectTrigger id="reviewer" className="w-full">
                   <SelectValue placeholder="Select a reviewer" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
+                  <SelectItem value="Eddie Lake">Francisco Alex</SelectItem>
                   <SelectItem value="Jamik Tashpulatov">
-                    Jamik Tashpulatov
+                    Paula Letrando
                   </SelectItem>
-                  <SelectItem value="Emily Whalen">Emily Whalen</SelectItem>
+                  <SelectItem value="Emily Whalen">Vera Verão</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </form>
         </div>
         <DrawerFooter>
-          <Button>Submit</Button>
+          <Button>Salvar</Button>
           <DrawerClose asChild>
-            <Button variant="outline">Done</Button>
+            <Button variant="outline">Cancelar</Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

@@ -9,7 +9,9 @@ export async function GET(req: NextRequest) {
   try {
     await connectDB()
     const lancamentos = await Lancamento.find().sort({ data_vencimento: -1 })
-    return NextResponse.json({ lancamentos })
+
+    console.log(lancamentos)
+    return NextResponse.json({ lancamentos }) 
   } catch (error) {
     console.error('Erro ao buscar lançamentos:', error)
     return NextResponse.json({ error: 'Erro ao buscar lançamentos' }, { status: 500 })
