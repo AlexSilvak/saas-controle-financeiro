@@ -353,7 +353,6 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
           <DropdownMenuItem>Alterar</DropdownMenuItem>
           <DropdownMenuItem>Baixar Parcial</DropdownMenuItem>
           <DropdownMenuItem>Baixa Total</DropdownMenuItem>
-          <DropdownMenuItem>Baixa Incluir</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
         </DropdownMenuContent>

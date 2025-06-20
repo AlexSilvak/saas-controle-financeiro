@@ -17,6 +17,8 @@ import {
   IconSearch,
   IconSettings,
   IconUsers,
+  IconRobot,
+  IconBrain,
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -58,6 +60,11 @@ const data = {
       title: "Pesquisar",
       url: "/search",
       icon: IconFolder,
+    },
+    {
+      title: "Chat",
+      url: "/search",
+      icon: IconBrain ,
     },
     
   ],
